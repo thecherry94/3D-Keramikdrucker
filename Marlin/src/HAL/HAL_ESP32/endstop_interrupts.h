@@ -40,9 +40,15 @@
  #include "fastio_ESP32.h"
  #include "../../module/endstops.h"
  #include "../../core/macros.h"
+ #include "SparkFunSX1509.h"
+ 
+
 
  // One ISR for all EXT-Interrupts
-void endstop_ISR(void) { endstops.check_possible_change(); }
+void endstop_ISR(void) {
+  Serial.println("ENDSTOP ISR");
+   endstops.check_possible_change(); 
+   }
 
 void setup_endstop_interrupts(void) {
   pinMode(ENDSTOP_INTERRUPTS_PIN, INPUT);
@@ -72,10 +78,20 @@ void setup_endstop_interrupts(void) {
 
   // This assumes that all the endstops are on the same port
 
+
+
+
   set_i2c_register(GET_REGISTER(ENDSTOP_INTERRUPTS_PIN, GPINTENA), pinmask);
   set_i2c_register(RegSenseLowA,0xAA);   // fallende flanke auf pin 0, 1, 2, und 3
   set_i2c_register(RegSenseHighA,0x0A);  // fallende flanke auf pin 4,und 5
   get_i2c_register(GET_REGISTER(X_MIN_PIN, GPIOA));
+
+
+  SX1509 io;
+  io.begin(GPIOX_I2C_ADDR);
+  io.enableInterrupt(4, FALLING);
+  io.enableInterrupt(5, FALLING);
+
 
   attachInterrupt(ENDSTOP_INTERRUPTS_PIN, endstop_ISR, FALLING);
 }
